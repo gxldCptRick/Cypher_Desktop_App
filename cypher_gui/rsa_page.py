@@ -12,7 +12,7 @@ class RSAPage(Page):
         self.rsa_key_frame = Frame(parent)
 
         public_key_frame = components.generate_button_file_button(
-            self.rsa_key_frame, "Public Key", self.update_something_with_key_file_name, [("Text Files", "*.txt")])
+            self.rsa_key_frame, "Public Key", self.update_something_with_key_file_name, [("Key Files", "*.txt *.rsa")])
         message_file_frame = components.generate_button_file_button(
             self.rsa_key_frame, "Message File", self.update_list_box_with_content, [("Word Docx And Text Files", "*.docx *.txt")])
         public_key_frame.pack(side=TOP)
@@ -25,7 +25,23 @@ class RSAPage(Page):
         self.text_var.set("Damned")
         label = Label(self.rsa_key_frame, textvariable=self.text_var)
         label.pack(side=BOTTOM)
+        self.submit_button = Button(
+            self.rsa_key_frame, text="Decrypt Stuff", command=self.do_the_things)
+        self.submit_button.pack()
         self.rsa_key_generator()
+
+    def do_the_things(self):
+        save = filedialog.asksaveasfilename(
+            initialdir=".", filetypes=[("text file", "*.txt")])
+        if(not save.endswith('.txt')):
+            save += ".txt"
+
+        with open(save, 'w') as file:
+            inputed_text = self.text_var.get()
+            out_text = cypher_app.cyphers.rsa.encrypt(
+                self.key_file, inputed_text)
+            file.write(out_text)
+        self.text_var.set("saved to %s" % save)
 
     def update_showcase_text(self, evt):
         selected = self.list_box.get(self.list_box.curselection())
