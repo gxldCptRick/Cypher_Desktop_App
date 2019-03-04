@@ -10,42 +10,50 @@ class RSAPage(Page):
         super(RSAPage, self).__init__(frame)
         self.last_active = None
         self.rsa_key_frame = Frame(parent)
+        self.initialize_rsa_frame()
+        self.rsa_key_generator()
 
+    def initialize_rsa_frame(self):
         public_key_frame = components.generate_button_file_button(
             self.rsa_key_frame, "Public Key", self.update_something_with_key_file_name, [("Key Files", "*.txt *.rsa")])
         message_file_frame = components.generate_button_file_button(
             self.rsa_key_frame, "Message File", self.update_list_box_with_content, [("Word Docx And Text Files", "*.docx *.txt")])
         public_key_frame.pack(side=TOP)
         message_file_frame.pack(side=TOP)
-        list_box = Listbox(self.rsa_key_frame)
-        list_box.pack(side=TOP)
+        (list_box_frame, list_box) = components.generate_list_box(self.rsa_key_frame)
         self.list_box = list_box
         self.list_box.bind("<<ListboxSelect>>", self.update_showcase_text)
-        self.text_var = StringVar()
-        self.text_var.set("Damned")
-        label = Label(self.rsa_key_frame, textvariable=self.text_var)
-        label.pack(side=BOTTOM)
-        self.submit_button = Button(
-            self.rsa_key_frame, text="Decrypt Stuff", command=self.do_the_things)
-        self.submit_button.pack()
-        self.rsa_key_generator()
+        self.text = "No Message Selected..."
+        (label_frame, label) = components.create_wrapped_component(
+            self.rsa_key_frame, Text)
+        label.insert(END, self.text)
+        label.config(state=DISABLED)
+        self.label = label
 
-    def do_the_things(self):
+        list_box_frame.pack()
+        label_frame.pack()
+        self.submit_button = Button(
+            self.rsa_key_frame, text="Encrypt Message", command=self.save_mesage_to_file)
+        self.submit_button.pack()
+
+    def save_mesage_to_file(self):
         save = filedialog.asksaveasfilename(
             initialdir=".", filetypes=[("text file", "*.txt")])
         if(not save.endswith('.txt')):
             save += ".txt"
-
         with open(save, 'w') as file:
-            inputed_text = self.text_var.get()
+            inputed_text = self.text
             out_text = cypher_app.cyphers.rsa.encrypt(
                 self.key_file, inputed_text)
             file.write(out_text)
-        self.text_var.set("saved to %s" % save)
 
     def update_showcase_text(self, evt):
         selected = self.list_box.get(self.list_box.curselection())
-        self.text_var.set(selected)
+        self.text = selected
+        self.label.config(state=NORMAL)
+        self.label.delete('1.0', END)
+        self.label.insert(END, self.text)
+        self.label.config(state=DISABLED)
 
     def update_something_with_key_file_name(self, file_name):
         self.key_file = file_name

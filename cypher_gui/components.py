@@ -21,3 +21,17 @@ def generate_button_file_button(parent, label_text, file_callback, file_types=[]
     label = Label(frame, textvariable=string_var)
     label.pack(side=LEFT)
     return frame
+
+
+def generate_list_box(parent):
+    return create_wrapped_component(parent, Listbox)
+
+
+def create_wrapped_component(parent, component):
+    frame = Frame(parent)
+    scrollbar = Scrollbar(frame)
+    instance = component(frame, yscrollcommand=scrollbar.set)
+    instance.pack(side=LEFT)
+    scrollbar.pack(side=RIGHT, fill=Y)
+    scrollbar.config(command=instance.yview)
+    return (frame, instance)
